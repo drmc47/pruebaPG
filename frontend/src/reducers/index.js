@@ -1,133 +1,298 @@
-import { GET_NTFs, SET_LOADING, IS_AUTORIZATED, TRANSACTION_METAMASK } from "../actions/constants";
+import {
+  GET_NFTs,
+  GET_NFT_BY_NAME,
+  GET_NFT_BY_ID,
+  GET_CATEGORIES,
+  FILTER_BY_NAME,
+  FILTER_BY_CATEGORY,
+  SORT_BY_PRICE,
+  POST_NFT,
+  IS_AUTHENTICATED,
+  TRANSACTION_METAMASK,
+  TRANSACTION_MERCADO_PAGO,
+  TRANSACTION_STRIPE,
+  LOGIN_SUCCESS,
+  LOGOUT,
+  SIGNUP_SUCCESS,
+  SIGNUP_ERROR,
+  ADD_SHOPPING_TROLLEY,
+  CONECT_LS,
+  POST_ORDER_SHOPPING_CART,
+  GET_ORDER_SHOPPING_CART,
+  SHOPPING_CART_PAYMENT,
+  POST_PROFILE_USER,
+  GET_PROFILE_USER,
+  GET_USERS,
+} from '../actions/constants'
+
+import {alertOk , alertError} from '../actions/sweetAlert/alerts'
+import Cookies from 'js-cookie';
+
 
 const initialState = {
-  allNFTs: [], // state of all NFTS from API openSea
-  filtered: [], // contains array for make the filters
-  loading: true, //  boolean for show a image when is loading. Set first : true
+  allNFTs: [], // all NFTS from API openSea
+  filtered: [],
   userIsAuthenticated: [],
-  page: 1,
+  userLogged: null,
   nftDetail: [],
   Nfts: [],
-  userLogged: null,
   filters: [],
   transactions: [],
+  categories: [],
+  shoppingTrolley: [],
+  shoppingCart: [],
+  shoppingCartPayment: [],
+  profileUserData: [],
+  allUsers:[],
+  role:""
 };
-
-function getFilters(nfts) {
-  let f = [];
-
-  nfts.map((g) => {
-    if (!f.includes(g.dappSlug)) {
-      f.push(g.dappSlug);
-    }
-  });
-
-  return f;
-}
 
 function rootReducer(state = initialState, action) {
   switch (action.type) {
-    case GET_NTFs:
+    case GET_NFTs:
       return {
         ...state,
-        page: 1,
         allNFTs: action.payload,
         filtered: action.payload,
-        loading: false,
         Nfts: action.payload,
-        filters: getFilters(action.payload),
-      };
-    case IS_AUTORIZATED:
-      return {
-        ...state,
-        userIsAuthenticated: action.payload,
-      };
-    case SET_LOADING:
-      return {
-        ...state,
-        loading: action.payload,
-      };
-    case "PAGE":
-      return {
-        ...state,
-        page: action.payload,
-      };
-    case "GET_NFT_BY_NAME":
+      }
+    case GET_NFT_BY_NAME:
       return {
         ...state,
         allNFTs: action.payload,
-      };
-    case "GET_NFT_BY_ID":
+      }
+    case GET_NFT_BY_ID:
       return {
         ...state,
         nftDetail: action.payload,
-      };
-    case "FILTER_BY_DES_ASC":
+      }
+    case FILTER_BY_NAME:
       const ascDescFilter =
-        action.payload === "za"
+        action.payload === 'za'
           ? state.allNFTs.sort((a, b) => {
-              // cat.name.charAt(0).toUpperCase()
-              if (a.name !== null && a.name > b.name !== null) {
-                if (
-                  a.name?.charAt(0).toLowerCase() <
-                  b.name?.charAt(0).toLowerCase()
-                ) {
-                  return 1;
-                } else {
-                  return -1;
-                }
-              }
+              if (
+                a.name?.charAt(0).toLowerCase() <
+                b.name?.charAt(0).toLowerCase()
+              )
+                return 1
+              return -1
             })
           : state.allNFTs.sort((a, b) => {
-              if (a.name !== null && b.name !== null) {
-                if (
-                  a.name?.charAt(0).toLowerCase() >
-                  b.name?.charAt(0).toLowerCase()
-                ) {
-                  return 1;
-                } else {
-                  return -1;
-                }
-              }
-            });
-
-      console.log(ascDescFilter, "asi queda");
+              if (
+                a.name?.charAt(0).toLowerCase() >
+                b.name?.charAt(0).toLowerCase()
+              )
+                return 1
+              return -1
+            })
       return {
         ...state,
         allNFTs: [...ascDescFilter],
-      };
-    case "SORT_PRICE":
+      }
+    case FILTER_BY_CATEGORY:
+      return {
+        ...state,
+        allNFTs: action.payload,
+      }
+
+    case GET_CATEGORIES:
+      return {
+        ...state,
+        categories: action.payload,
+      }
+
+    case SORT_BY_PRICE:
       const priceFilter =
-        action.payload === "max"
+        action.payload === 'max'
           ? [...state.Nfts].sort(
               (b, a) => parseInt(a.price) - parseInt(b.price)
             )
           : [...state.Nfts].sort(
               (b, a) => parseInt(b.price) - parseInt(a.price)
-            );
-      console.log(priceFilter, priceFilter.length);
+            )
+      console.log(priceFilter, priceFilter.length)
       return {
         ...state,
         allNFTs: priceFilter,
-      };
-    case "FILTER_CATEGORIE":
-      const Nfts = state.Nfts;
-      const filterCat =
-        action.payload === "All"
-          ? Nfts
-          : Nfts.filter((i) => i.dappSlug === action.payload);
+      }
+    case POST_NFT:
       return {
         ...state,
-        allNFTs: filterCat,
-      };
-    case TRANSACTION_METAMASK:
-        console.log("transactions:", state.transactions)
+        allNFTs: [state.allNFTs, action.payload],
+      }
+    case IS_AUTHENTICATED:
       return {
-        ...state, transactions: action.payload,
-      };
+        ...state,
+        userIsAuthenticated: action.payload,
+      }
+    case TRANSACTION_METAMASK:
+      return {
+        ...state,
+        transactions: action.payload,
+      }
+    case TRANSACTION_MERCADO_PAGO:
+      return state
+    case TRANSACTION_STRIPE:
+      return state
+    case LOGIN_SUCCESS:
+      // let role= JSON.parse(window.sessionStorage.getItem('role'))
+      let role = Cookies.get('role')
+      // let islogged = JSON.parse(window.sessionStorage.getItem('userLogged'))
+      let islogged = Cookies.get('token')
+      return {
+        ...state,
+        role: role,
+        userLogged: islogged,
+        // shoppingTrolley:action.payload[2]
+        
+      }
+    case 'USER_SESSION':
+      // if (window.sessionStorage.getItem('userLogged') && window.sessionStorage.getItem('role')) {
+        let token = Cookies.get('token');
+        if (token) {
+          return {
+          ...state,
+          // userLogged: JSON.parse(window.sessionStorage.getItem('userLogged')),
+          userLogged: Cookies.get('token'),
+          // role: JSON.parse(window.sessionStorage.getItem('role')),
+          role: Cookies.get('role')
+         
+        }
+      } else {
+        return state
+      }
+    case LOGOUT:
+      // window.sessionStorage.removeItem('userLogged')
+      // window.sessionStorage.removeItem('role')
+      Cookies.remove('token')
+      Cookies.remove('role')
+      return {
+        ...state,
+        role: null,
+        userLogged: null,
+        shoppingTrolley:[]
+      }
+    case SIGNUP_SUCCESS:
+      return {
+        ...state,
+        userLogged: {
+          email: action.payload.email,
+          firstName: action.payload.firstName,
+        }
+      }
+    case SIGNUP_ERROR:
+      return {
+        ...state,
+        userLogged: null,
+      }
+    case ADD_SHOPPING_TROLLEY:
+      const myStorage = window.localStorage
+      let getmyStorage = myStorage.getItem('user')
+      let parsLocal = JSON.parse(getmyStorage)
+      alertOk()
+      if (!parsLocal) {
+        myStorage.setItem(
+          'user',
+          JSON.stringify(state.shoppingTrolley.concat(action.payload))
+        )
+        return {
+          ...state,
+          shoppingTrolley: state.shoppingTrolley.concat(
+            JSON.parse(myStorage.getItem('user'))
+          ),
+        }
+      }
+      if (parsLocal) {
+        let productAction = action.payload
+        let isrepeat = parsLocal
+          ? parsLocal.includes(productAction)
+          : null
+
+        if (isrepeat) {
+          alertError()
+          return {
+            ...state,
+          }
+        } else {
+          let local = JSON.parse(
+            myStorage.setItem(
+              'user',
+              JSON.stringify(
+                JSON.parse(window.localStorage.getItem('user')).concat(
+                  action.payload
+                )
+              )
+            )
+          )
+          return {
+            ...state,
+            shoppingTrolley: local,
+          }
+        }
+      }
+      break
+    case CONECT_LS:
+      if (!window.localStorage.getItem('user')) {
+        return {
+          ...state,
+          shoppingTrolley: state.shoppingTrolley,
+        }
+      } else {
+        return {
+          ...state,
+          shoppingTrolley: JSON.parse(window.localStorage.getItem('user')),
+        }
+      }
+    case POST_ORDER_SHOPPING_CART:
+      return {
+        ...state,
+        shoppingTrolley: action.payload,
+      }
+    case GET_ORDER_SHOPPING_CART:
+      return {
+        ...state,
+        shoppingCart: action.payload,
+      }
+    case SHOPPING_CART_PAYMENT:
+      return {
+        ...state,
+        shoppingCartPayment: action.payload,
+      }  
+    case POST_PROFILE_USER:
+      return {
+        ...state,
+        profileUser: action.payload,
+      }
+
+    case GET_PROFILE_USER:
+      return {
+        ...state,
+        profileUserData: action.payload,
+      }
+    case GET_USERS:
+      return {
+        ...state,
+        allUsers: action.payload,
+      }
+      case "DB_SHOPPING_CART":
+        return {
+          ...state,
+         shoppingTrolley: action.payload,
+        }
+           
+      case "CLICK_USER_LOGGED":
+        action.payload.forEach(e => {
+          state.shoppingTrolley.includes(e)? alertError() : alertOk()
+        })
+      return {
+        ...state,
+       shoppingTrolley: action.payload,
+      }
+      
     default:
-      return state;
+      return state
   }
 }
 
-export default rootReducer;
+export default rootReducer
+

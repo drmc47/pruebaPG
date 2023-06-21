@@ -1,112 +1,110 @@
-import NavBar from '../NavBar/NavBar'
-import './Login.module.css'
-import { useDispatch } from 'react-redux'
+import './Login.css'
 import React, { useState } from 'react'
-import IsAutorize from '../../actions/IsAutorize'
-import { TextField, Button } from '@material-ui/core'
-import localLogin from "../../actions/login";
-const Web3 = require('web3');
+import { TextField, Button, Grid, Container, Paper, Avatar, Typography } from '@material-ui/core'
+import localLogin from '../../actions/login'
+import { makeStyles } from "@material-ui/core/styles";
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
-export default function Login() {
-  const dispatch = useDispatch()
-  const [inputs, setInputs] = useState({ email: '', password: '' })
-  const [error, setError] = useState({ emailError: false, passError: false })
-
-  const validateEmail = (input) => {
-    return {
-      error: !/\S+@\S+\.\S+/.test(input),
-      message: !/\S+@\S+\.\S+/.test(input) ? 'Please enter a valid email' : '',
+const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100vh",
+    backgroundPosition: "center"
+  },
+  container: {
+    height: "60%",
+    marginTop: theme.spacing(10),
+    [theme.breakpoints.down('sm')]: {
+      marginTop: theme.spacing(-5),
+      width: "100%",
+      height: "100%"
     }
+  },
+  center: {
+    marginTop: theme.spacing(8),
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.primary.main,
+  },
+  button: {
+    maxHeight: "33px",
+    marginRight: "100px",
   }
-
-  function handleChange(e) {
-    setInputs({ ...inputs, [e.target.name]: e.target.value })
-    setError({
-      emailError: validateEmail(inputs.email).error,
-      passError: !inputs.password.length,
-    })
-  }
-  function handleSubmit(e) {
-    e.preventDefault()
-    // despachar una accion que envie el objeto inputs al back
-    dispatch(localLogin(inputs))
-    // setInputs({ email: '', password: '' })
-    // redirigir a donde el usuario estaba antes
-  }
+  
+}));
 
 
-
-  // const connect = async function () {
-  //   if (window.ethereum) {
-  //     await window.ethereum.request({ method: 'eth_requestAccounts' })
-  //     const web3 = new Web3(window.ethereum)
-  //   } else {
-  //     alert(' Please Install Metamask')
-  //     window.open(
-  //       'https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn',
-  //       '_blank'
-  //     )
-  //     /* window.location.href = "https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn"; */
-  //   }
-  // }
-
+export default function Login({ invalidEmail, handleChange, handleSubmit, buttonchange }) {
+  const classes = useStyles();
+  const myStorage = window.localStorage
+  let cart= JSON.parse(myStorage.getItem('user'))
+  
+  const [inputs, setInputs] = useState({ username: '', password: '', cart:cart })
   return (
-    <div className='App'>
-      <NavBar />
-      <header className='App-header'>
-        <h1>LOGIN</h1>
-        <form action='' noValidate autoComplete='off' onSubmit={handleSubmit}>
-          <div>
+     <Grid component="main" className={classes.root}> 
+      <Container component={Paper} elevation={5} maxWidth='xs' className={classes.container}>
+        <div className={classes.center}>
+          <Avatar className={classes.avatar}>
+        <LockOutlinedIcon/>
+        </Avatar>
+        <Typography component="h1" variant="h5">Login</Typography>
+        <form
+          action=''
+          noValidate
+          autoComplete='off'
+          onSubmit={(e) => handleSubmit(e, localLogin, inputs)}
+        >
             <TextField
-              onChange={(e) => handleChange(e)}
-              error={error.emailError}
-              id='email'
-              name='email'
+              onChange={(e) => handleChange(e, inputs, setInputs)}
+              error={inputs.username && invalidEmail(inputs.username)}
+              id='username'
+              name='username'
               label='E-mail'
-              value={inputs.email}
+              value={inputs.username}
               variant='outlined'
-              helperText={validateEmail(inputs.email)?.message}
+              fullWidth
+              autoFocus
+              margin="normal"
             />
-          </div>
-          <div>
+          
             <TextField
-              onChange={(e) => handleChange(e)}
+              onChange={(e) => handleChange(e, inputs, setInputs)}
               id='password'
               name='password'
               label='Password'
               value={inputs.password}
               variant='outlined'
               type='password'
+              fullWidth
+              autoFocus
+              margin="normal"
             />
-          </div>
-          <div>
+
             <Button
               variant='contained'
+              className={classes.button}
               color='primary'
-              disabled={!error.emailError && !error.passError ? false : true}
+              disabled={
+                invalidEmail(inputs.username) && !inputs.password.length
+              }
               type='submit'
             >
               Login
             </Button>
-          </div>
-          
+            {buttonchange }
         </form>
-
-        <div className='LoginDiv'>
-          {/* <h3>Login with google or MetaMask acount</h3> */}
-          {/* <button id='connect' onClick={connect}>
-            MetaMask
-          </button> */}
-          <button
-            onClick={() => {
-              dispatch(IsAutorize())
-            }}
-          >
-            Ingresar con Google
-          </button>
-          <a href="http://localhost:8001/auth/google">go google</a>
-        </div>
-      </header>
+    <div id="SignInWrapper">
+    <span className="label">Login with  </span>
+    <div id="customBtn" className="customGPlusSignIn">
+      <span className="icon"></span>
+      <span className="buttonText"><a style={{textDecoration: "none"}} href='http://localhost:8001/auth/google'>Google</a></span>
     </div>
+  </div>
+        </div>
+        </Container>
+      </Grid>
   )
 }

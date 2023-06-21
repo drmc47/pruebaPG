@@ -8,13 +8,17 @@ export default createTheme({
         common: {
             green: `${emeraldgreen}`,
             gray: `${lightgray}`,
+            color0: "#F0D9FF"
         },
         primary: {
             main: `${emeraldgreen}`
         },
         secondary: {
             main: `${lightgray}`
-        }
+        },
+        color0: {
+            main: `${lightgray}`
+        },
     },
     typography: {
         tab: {

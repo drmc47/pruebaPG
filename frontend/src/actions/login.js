@@ -1,25 +1,30 @@
-import loginUser from "../services/auth/loginUser";
+import loginUser from '../services/auth/loginUser'
 
-export default function login(payload) {
-    try{
-        return async function(dispatch){
-            const response = await loginUser(payload);
-            
-            if(response.data) {
-                const user = response.data.data;
-                dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    payload: user
-                })
+export default function localLogin(payload) {
 
-            } else {
-                dispatch({
-                    type: 'LOGIN_ERROR'
-                })
-            }
-        }
+  return async function (dispatch) {
+    const response = await loginUser(payload)
+    
+    if (response) {
+      window.sessionStorage.setItem(
+        'role',
+        JSON.stringify(response[1])
+      )
+      window.sessionStorage.setItem(
+        'userLogged',
+        JSON.stringify(response[0].token)
+      )
+      window.localStorage.removeItem(
+        'user',
+      )
+     dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: response,
+      })
+    } else {
+      dispatch({
+        type: 'LOGIN_ERROR',
+      })
     }
-    catch(error){
-        console.log(error)
-    }
+  }
 }

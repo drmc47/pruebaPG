@@ -1,13 +1,12 @@
 import axios from "axios";
-import { GET_NTFs } from "./constants";
+import { GET_NFTs } from "./constants";
 
 export const getNFTs = () => {
   return async function (dispatch) {
     try {
       let response = await axios.get("http://localhost:8001/nfts");
-      console.log(response);
       return dispatch({
-        type: GET_NTFs,
+        type: GET_NFTs,
         payload: response.data,
       });
     } catch (error) {
@@ -15,10 +14,3 @@ export const getNFTs = () => {
     }
   };
 };
-
-export function pageUno(payload) {
-  return {
-    type: "PAGE",
-    payload,
-  };
-}

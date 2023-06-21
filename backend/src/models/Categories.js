@@ -1,21 +1,15 @@
-
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const findOrCreate = require('mongoose-findorcreate');
+//const findOrCreate = require('mongoose-findorcreate');
 
-const CategoriesSchema = new Schema({
-	name: {
-		type: String,
-		unique: true,
-	},
-	products: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'products',
-		},
-	],
-	specs: [],
-});
-CategoriesSchema.plugin(findOrCreate);
+const CategoriesSchema = new Schema(
+  {
+    name: String,
+  },
+  {
+    versionKey: false, // no genera el el id por default
+  }
+);
+//CategoriesSchema.plugin(findOrCreate);
 
-module.exports = mongoose.model('categories', CategoriesSchema);
+module.exports = mongoose.model("categories", CategoriesSchema);

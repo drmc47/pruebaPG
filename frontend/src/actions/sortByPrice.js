@@ -1,6 +1,6 @@
 export function sortByPrice(payload) {
   return {
-    type: "SORT_PRICE",
+    type: "SORT_BY_PRICE",
     payload,
   };
 }

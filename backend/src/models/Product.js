@@ -8,10 +8,23 @@ const ProductsSchema = new Schema({
   id: String,
   price: { type: Number, required: true },
   currency: { type: String, required: true },
-  images: String,
+  image: String,
+
+  categories: [
+    {
+      type: Schema.Types.ObjectId,
+
+      ref: "categories",
+    },
+    { timestamps: true, versionKey: false },
+  ],
+
   tokenId: String,
+
   address: String,
+
   reviews: String,
+
   createdInDB: {
     type: Boolean,
     default: true,

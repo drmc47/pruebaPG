@@ -1,125 +1,135 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getNFTByName } from "../../actions/getNFTByName";
-import { getNFTs, pageUno } from "../../actions/getNFTs.js";
-import InputBase from '@material-ui/core/InputBase';
-import SearchIcon from '@material-ui/icons/Search';
+import { getNFTs} from "../../actions/getNFTs.js";
+import { filterByCategories } from "../../actions/filtercategory.js";
 import { makeStyles } from '@material-ui/core/styles';
 import Cards from "../card/card.jsx"
 import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import Search from "../Search/Search.jsx"
+import SortBy from "../Sortby/Sortby.jsx"
+import Slider from 'react-slick'
+import {useTheme} from '@material-ui/core/styles'
+import "./categories.css"
 
 const useStyles = makeStyles((theme) => ({
-    search: {
-      maxWidth: "250px",
-      position: 'fixed',
-      right: "15px",
-      marginBottom: "15px",
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: theme.palette.primary.main,
-      '&:hover': {
-        backgroundColor: theme.palette.secondary.main,
-      },
-      marginRight: 0,
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(1),
-        width: 'auto',
-      },
-    },
-    searchIcon: {
-      color: "white",
-      padding: theme.spacing(0, 2),
-      height: '100%',
-      position: 'absolute',
-      pointerEvents: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    inputRoot: {
-      color: 'white',
-    },
-    inputInput: {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-      transition: theme.transitions.create('width'),
-      width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        width: '12ch',
-        '&:focus': {
-          width: '20ch',
-        },
-      },
-    },
+    
     gridContainer: {
       marginTop: "30px"
+    },
+    button0: {
+      display: "flex",
+      alignContent: "center",
+      justifyContent: "center",
+      height: "50px",
+      borderRadius: "8%",
+      maxWidth: "200px",
+      backgroundColor: "rgba(199, 248, 237, 0.5)",
+      "&:hover": {
+        backgroundColor: "rgba(199, 248, 237, 0.9)"
+      },
+     
+      
+    },
+    insidetext: {
+      marginTop: "5%"
     }
   }));
 
 export default function Categories() {
-
+  const classes = useStyles();
+  const theme = useTheme();
+  const stateCategories = useSelector((state) => state.categories)
   const stateAllNFTs = useSelector((state) => state.allNFTs);
-  console.log(stateAllNFTs)
   
+
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getNFTs());
-    //dispatch(loading(true))
-    // return () => {
-    //   dispatch(getNFTs());
-    // };
   }, [dispatch]);
 
-  const [inputName,setInputName]=useState("")
-
-
-  
-  function handleInput(e){
-
-        e.preventDefault()
-        setInputName(e.target.value);
-        
+  const handleclick = (e) => {
+    e.preventDefault();
+    console.log(e.currentTarget)
+    dispatch(filterByCategories(e.currentTarget.value))
   }
-    function handleSubmit(e){
-        console.log(e)
-        if(e.key === "Enter") {
-          dispatch(getNFTByName(inputName));
-          setInputName("")
-        }
-    }
 
-    const classes = useStyles();
+  var settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 6,
+    slidesToScroll: 2,
+    arrows: true,
+    responsive: [
+      {
+        breakpoint: 1200,
+        settings: {
+          slidesToShow: 5,
+          slidesToScroll: 2,
+          infinite: true,
+          dots: true
+        }
+      },
+      {
+        breakpoint: 1000,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 2,
+          initialSlide: 2
+        }
+      },
+      {
+        breakpoint: 800,
+        settings: {
+
+          slidesToShow: 3,
+          slidesToScroll: 1
+        }
+      },
+      {
+        breakpoint: 600,
+        settings: {
+
+          slidesToShow: 2,
+          slidesToScroll: 1
+        }
+      }
+    ]
+  }
+
+
+ 
+  
     return(
         <React.Fragment>
-            <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon/>
-            </div>
-            <InputBase
-              value={inputName}
-              placeholder="Search…"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-              onChange={(e)=>handleInput(e)}
-              onKeyPress={(e)=>handleSubmit(e)}
-            />
-          </div>
-          <Grid container spacing={6}  className={classes.gridContainer}>
+          {/* <SortBy></SortBy> */}
+          <Search></Search>
+          <Slider {...settings} className="slider">
+        {stateCategories.length > 0
+          ? stateCategories.map((ele) => (
+          <Button variant="outlined" onClick={(e)=>handleclick(e)} value={ele._id}
+            className={classes.button0}
+            //  className={`color${Math.floor(Math.random() * 10)}` }
+             >
+               <h4 className={classes.insidetext}>{ele.name}</h4>
+           
+              </Button>
+            ))
+          : null}
+      </Slider>
+          <Grid container spacing={6} justify="center" className={classes.gridContainer}>
               {
                   stateAllNFTs  ? stateAllNFTs.map(ele => {
-                    if(ele !== null) {
-                      return (
+                    return (
+                      ele !== null && (
                         <div>
-                            <Cards ele={ele} />
+                          <Cards ele={ele} />
                         </div>
+                      )
                     )
-                    }
-                     
+
                   }) : <h1>Loading</h1>
               }
           </Grid>

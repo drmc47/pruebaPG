@@ -1,10 +1,6 @@
 const Product = require("../../models/Product");
 const Web3 = require("web3");
 const web3 = new Web3();
-const axios = require("axios").default;
-const { API_KEY_OPENSEA } = process.env;
-
-
 
 async function createProduct(req, res) {
   try {
@@ -48,63 +44,6 @@ async function createProduct(req, res) {
   }
 }
 
-
-// async function getProductsApi ()  {
-//     try{
-//             const nfts = await axios.get('https://api.coinranking.com/v2/nfts?&limit=100');
-//             const nft = nfts.data.data.nfts;
-//             let dataAssets = [];    
-//             for (let n of nft) {
-//                     const assets = { 
-//                         name: n.name,
-//                         image: n.image,
-//                         _id: n.id,
-//                         price:n.price,
-//                         description:n.description,
-//                         price_dolar:n.priceInDollar,     
-//                         tokenId:n.tokenId
-//               };
-//             dataAssets.push(assets);
-//             }
-//             return dataAssets;
-      
-//     }
-//     catch(error){
-//         console.log('Error')
-//     }
-
-// }
-
-
-  async function getProductsApi() {
-  try {
-    const nfts = await axios.get("https://api.coinranking.com/v2/nfts?coinranking5b3bbf11ed4b4d0aebd425f10e5ab6312dc2390909013e3a&limit=100");
-    const nft = nfts.data.data.nfts;
-    const filtrado = nft.filter((n) => n.name && n.image);
-    let dataAssets = [];
-    for (let n of filtrado) {
-      const assets = {
-        name: n.name,
-        image: n.image || n.dappImage,
-        _id: n.id,
-        price: n.price,
-        description: n.description,
-        price_dolar: n.priceInDollar,
-        tokenId: n.tokenId,
-        dappSlug: n.dappSlug,
-      };
-      dataAssets.push(assets);
-    }
-
-    return dataAssets;
-  } catch (error) {
-    console.log("Error");
-  }
-}
- 
-
-
-
 async function getProductsDb() {
   try {
     const products = await Product.find();
@@ -113,21 +52,12 @@ async function getProductsDb() {
     console.log(err);
   }
 }
-let getAll = async () => {
-  try {
-    const nftApi = await getProductsApi();
-    const nftDB = await getProductsDb();
-    const nftTotal = nftApi ? nftApi.concat(nftDB) : nftDB;
-    return nftTotal;
-  } catch (error) {
-    console.log(error);
-  }
-};
-//FUNCION QUE HACE EL GET
+
+
 let getNFTs = async (_req, res) => {
   try {
-    let nft = await getAll();
-    return res.json(nft);
+    let nfts = await getProductsDb();
+    return res.json(nfts);
   } catch (error) {
     console.log(error);
   }
@@ -135,33 +65,12 @@ let getNFTs = async (_req, res) => {
 
 
 async function getProductById (req, res)  {
-    console.log("entree")
-   
+  const { id } = req.params;
 try {
-    const { id } = req.params;
-    if(id.length > 16) {
-      let nftApi = await axios.get(`https://api.coinranking.com/v2/nft/${id}?coinranking5b3bbf11ed4b4d0aebd425f10e5ab6312dc2390909013e3a`);
-      return res.send(nftApi.data.data.nft)
-    }
-    let nftDB = await getProductsDb();
-      nftDB = nftDB.find(e=> e._id == id);
-      return nftDB;
-    // let nft = await getAll();   
-    // const result=nft.find(n=>{
-
-    //     if(n._id && n._id == id){           
-    //         return n
-    //         }
-    //     })
-    // if (!result){
-    //     return next({msg: 'Id incorrecto', status: 500})
-    // }else{
-    //     if(!result.createdInDB){
-    //         let nftApi = await axios.get('https://api.coinranking.com/v2/nft/'+id)
-    //         return res.send(nftApi.data.data.nft)
-    //     }
-    //     res.status(200).send(result)
-    // }
+    let info = await Product.findById(id)
+    console.log(info);
+    return res.json(info)
+  
 } catch(error) {
     
     return res.json(error)
@@ -172,7 +81,7 @@ try {
 async function searchProduct(req, res, next) {
   var name = req.query.query;
   try {
-    let nft = await getAll();
+    let nft = await getProductsDb();
     const result = nft.filter((n) => {
       if (n.name && n.name.toLowerCase().includes(name.toLowerCase())) {
         return n;
@@ -215,7 +124,6 @@ async function deleteProductById(req, res, next) {
 
 module.exports = {
   createProduct,
-  getProductsApi,
   getProductsDb,
   getProductById,
   updateProductById,
